@@ -137,22 +137,16 @@
     }
 
     /* GOOD */
-.card--good {
-  border: 2px solid #ea580c; /* orange */
-}
+    .card--good {
+      border: 2px solid #ea580c; /* orange */
+    }
 
-/* BETTER */
-.card--better {
-  border: 2px solid #2563eb; /* blue */
-}
+    /* BETTER */
+    .card--better {
+      border: 2px solid #2563eb; /* blue */
+    }
 
-/* BEST (unchanged, still premium) */
-.card--best {
-  border: 2px solid #16a34a;
-  background: #f0fdf4;
-  box-shadow: 0 18px 45px rgba(22, 163, 74, 0.22);
-}
-
+    /* BEST (premium) */
     .card--best {
       border: 2px solid #16a34a;
       background: #f0fdf4;
@@ -220,6 +214,17 @@
     }
 
     .empty-state strong { color: #111827; font-weight: 600; }
+
+    /* Tech Services callout = "Best" vibe */
+    .empty-state.callout {
+      border: 2px solid #16a34a;
+      background: #f0fdf4;
+      box-shadow: 0 18px 45px rgba(22, 163, 74, 0.22);
+    }
+
+    .empty-state.callout strong {
+      color: #166534;
+    }
   </style>
 </head>
 
@@ -444,40 +449,40 @@
     };
 
     // ------------------------------
-// Call for Technical Assistance helper
-// ------------------------------
-function applyCallForAssistance(projects, sizes) {
-  projects.forEach(project => {
-    sizes.forEach(size => {
-      recommendations[`${project}|${size}`] = {
-        message:
-          "<strong>Further assistance required.</strong><br/>Please call Technical Services at: <strong>1-800-282-5828</strong>"
-      };
-    });
-  });
-}
+    // Call for Technical Assistance helper
+    // ------------------------------
+    function applyCallForAssistance(projects, sizes) {
+      projects.forEach(project => {
+        sizes.forEach(size => {
+          recommendations[`${project}|${size}`] = {
+            message:
+              "<strong>Further assistance required.</strong><br/>Please call Technical Services at: <strong>1-800-282-5828</strong>"
+          };
+        });
+      });
+    }
 
-// ------------------------------
-// Call-for-assistance rules
-// ------------------------------
+    // ------------------------------
+    // Call-for-assistance rules
+    // ------------------------------
 
-// Concrete: up to 1"
-applyCallForAssistance(["concrete"], ["0.25", "0.375", "0.5", "1"]);
+    // Concrete: up to 1"
+    applyCallForAssistance(["concrete"], ["0.25", "0.375", "0.5", "1"]);
 
-// Brick: up to 2\" and over 2\"
-applyCallForAssistance(["brick"], ["2", "over2"]);
+    // Brick: up to 2" and over 2"
+    applyCallForAssistance(["brick"], ["2", "over2"]);
 
-// CMU: up to 2\" and over 2\"
-applyCallForAssistance(["CMU"], ["2", "over2"]);
+    // CMU: up to 2" and over 2"
+    applyCallForAssistance(["CMU"], ["2", "over2"]);
 
-// Mortar joint: up to 1\", up to 2\", over 2\"
-applyCallForAssistance(["mortar-joint"], ["1", "2", "over2"]);
+    // Mortar joint: up to 1", up to 2", over 2"
+    applyCallForAssistance(["mortar-joint"], ["1", "2", "over2"]);
 
-// Crack repair: up to 2\" and over 2\"
-applyCallForAssistance(["crack"], ["2", "over2"]);
+    // Crack repair: up to 2" and over 2"
+    applyCallForAssistance(["crack"], ["2", "over2"]);
 
-// Leveler: over 2\" only
-applyCallForAssistance(["leveler"], ["over2"]);
+    // Leveler: over 2" only
+    applyCallForAssistance(["leveler"], ["over2"]);
 
     // ------------------------------
     // 1b. Reuse combos (no rewrites)
@@ -563,6 +568,9 @@ applyCallForAssistance(["leveler"], ["over2"]);
       const key = `${projectSelect.value}|${sizeSelect.value}`;
       const combo = recommendations[key];
 
+      // Reset callout styling every render (prevents it from "sticking")
+      emptyState.classList.remove("callout");
+
       if (!projectSelect.value || !sizeSelect.value) {
         cardsContainer.innerHTML = "";
         emptyState.style.display = "block";
@@ -581,15 +589,15 @@ applyCallForAssistance(["leveler"], ["over2"]);
         return;
       }
 
-   if (!combo.good && !combo.better && !combo.best && combo.message) {
-  cardsContainer.innerHTML = "";
-  emptyState.style.display = "block";
-  emptyState.classList.add("callout");      // ✅ make it green + highlighted
-  emptyState.innerHTML = combo.message;
-  updateSelectionLabel();
-  return;
-
-}
+      // Tech Services / callout message
+      if (!combo.good && !combo.better && !combo.best && combo.message) {
+        cardsContainer.innerHTML = "";
+        emptyState.style.display = "block";
+        emptyState.classList.add("callout"); // ✅ green + highlighted like BEST
+        emptyState.innerHTML = combo.message;
+        updateSelectionLabel();
+        return;
+      }
 
       emptyState.style.display = "none";
       cardsContainer.innerHTML = "";
