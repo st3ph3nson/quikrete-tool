@@ -431,6 +431,42 @@
     };
 
     // ------------------------------
+// Call for Technical Assistance helper
+// ------------------------------
+function applyCallForAssistance(projects, sizes) {
+  projects.forEach(project => {
+    sizes.forEach(size => {
+      recommendations[`${project}|${size}`] = {
+        message:
+          "<strong>Further assistance required.</strong><br/>Please call Technical Services at: <strong>1-800-282-5828</strong>"
+      };
+    });
+  });
+}
+
+// ------------------------------
+// Call-for-assistance rules
+// ------------------------------
+
+// Concrete: up to 1"
+applyCallForAssistance(["concrete"], ["0.25", "0.375", "0.5", "1"]);
+
+// Brick: up to 2\" and over 2\"
+applyCallForAssistance(["brick"], ["2", "over2"]);
+
+// CMU: up to 2\" and over 2\"
+applyCallForAssistance(["CMU"], ["2", "over2"]);
+
+// Mortar joint: up to 1\", up to 2\", over 2\"
+applyCallForAssistance(["mortar-joint"], ["1", "2", "over2"]);
+
+// Crack repair: up to 2\" and over 2\"
+applyCallForAssistance(["crack"], ["2", "over2"]);
+
+// Leveler: over 2\" only
+applyCallForAssistance(["leveler"], ["over2"]);
+
+    // ------------------------------
     // 1b. Reuse combos (no rewrites)
     // ------------------------------
     function applyCombo(projectTypes, sizes, combo) {
