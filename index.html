@@ -136,9 +136,22 @@
       position: relative;
     }
 
-    .card--good { border-top: 3px solid #ea580c; }   /* orange */
-    .card--better { border-top: 3px solid #2563eb; } /* blue */
-    .card--best { border-top: 3px solid #16a34a; }   /* green */
+    /* GOOD */
+.card--good {
+  border: 2px solid #ea580c; /* orange */
+}
+
+/* BETTER */
+.card--better {
+  border: 2px solid #2563eb; /* blue */
+}
+
+/* BEST (unchanged, still premium) */
+.card--best {
+  border: 2px solid #16a34a;
+  background: #f0fdf4;
+  box-shadow: 0 18px 45px rgba(22, 163, 74, 0.22);
+}
 
     .card--best {
       border: 2px solid #16a34a;
