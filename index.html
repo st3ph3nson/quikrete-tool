@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    /* ✅ Fix: global box sizing (your previous selector had typos + was inside :root) */
+    /* ✅ Fix: global box sizing (had typos + was inside :root) */
     *, *::before, *::after { box-sizing: border-box; }
 
     :root {
@@ -171,7 +171,7 @@
       /* ✅ Fix: prevents Safari “paint slab” artifacts */
       overflow: hidden;
 
-      /* keep your blur effect where Safari behaves (desktop/tablet) */
+      /* keep blur effect where Safari behaves (desktop/tablet) */
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
     }
@@ -273,7 +273,7 @@
       color: #166534;
     }
 
-    /* ✅ The real mobile fix: disable backdrop blur on iOS phone widths */
+    /* ✅ mobile fix: disable backdrop blur on iOS phone widths */
     @media (max-width: 767px) {
       .card {
         backdrop-filter: none !important;
