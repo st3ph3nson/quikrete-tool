@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
+    /* ✅ Fix: global box sizing (your previous selector had typos + was inside :root) */
+    *, *::before, *::after { box-sizing: border-box; }
+
     :root {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 
@@ -20,10 +23,6 @@
         radial-gradient(900px 600px at 80% 20%, rgba(250,204,21,0.10), transparent 50%),
         var(--q-black);
 
-      *, *: :before, *: :after {
-        box-sizing: border-box;
-      }
-
       color: #f9fafb;
     }
 
@@ -36,9 +35,9 @@
     }
 
     .app {
-      width: 100;            /* FULL SCREEN */
-      height: 100vh;           /* FULL SCREEN */
-      max-width: 100;         /* remove 960px cap */
+      width: 100%;             /* ✅ Fix: needs % */
+      min-height: 100vh;       /* ✅ Safer than height:100vh on mobile Safari */
+      max-width: 100%;         /* ✅ Fix: needs % */
       border-radius: 0;        /* full-bleed */
       border: 0;
       box-shadow: none;
@@ -168,7 +167,13 @@
       flex-direction: column;
       gap: 0.4rem;
       position: relative;
+
+      /* ✅ Fix: prevents Safari “paint slab” artifacts */
+      overflow: hidden;
+
+      /* keep your blur effect where Safari behaves (desktop/tablet) */
       backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
     }
 
     /* GOOD */
@@ -196,7 +201,6 @@
         z-index: 5;
       }
     }
-
 
     .card-pill {
       display: inline-flex;
@@ -269,9 +273,14 @@
       color: #166534;
     }
 
+    /* ✅ The real mobile fix: disable backdrop blur on iOS phone widths */
     @media (max-width: 767px) {
+      .card {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
       .card--best {
-        box-shadow: none;
+        box-shadow: none !important;
       }
     }
   </style>
@@ -280,15 +289,15 @@
 <body>
   <main class="app">
     <div class="header">
-  <img src="QK.png" alt="QUIKRETE" class="logo" />
-  <div class="header-text">
-    <h1>Project Selector</h1>
-    <p class="subtitle">
-      Choose a project type and repair size to see a simple
-      <strong>Good / Better / Best</strong> recommendation.
-    </p>
-  </div>
-</div>
+      <img src="QK.png" alt="QUIKRETE" class="logo" />
+      <div class="header-text">
+        <h1>Project Selector</h1>
+        <p class="subtitle">
+          Choose a project type and repair size to see a simple
+          <strong>Good / Better / Best</strong> recommendation.
+        </p>
+      </div>
+    </div>
 
     <section aria-label="Project selection">
       <div class="form-row">
@@ -509,9 +518,6 @@
       }
     };
 
-    // ------------------------------
-    // Call for Technical Assistance helper
-    // ------------------------------
     function applyCallForAssistance(projects, sizes) {
       projects.forEach(project => {
         sizes.forEach(size => {
@@ -523,93 +529,45 @@
       });
     }
 
-    // ------------------------------
-    // Call-for-assistance rules
-    // ------------------------------
-
-    // Concrete: up to 1"
     applyCallForAssistance(["concrete"], ["0.25", "0.375", "0.5", "1"]);
-
-    // Brick: up to 2" and over 2"
     applyCallForAssistance(["brick"], ["2", "over2"]);
-
-    // CMU: up to 2" and over 2"
     applyCallForAssistance(["CMU"], ["2", "over2"]);
-
-    // Mortar joint: up to 1", up to 2", over 2"
     applyCallForAssistance(["mortar-joint"], ["1", "2", "over2"]);
-
-    // Crack repair: over 2"
     applyCallForAssistance(["crack"], ["over2"]);
-
-    // Leveler: over 2" only
     applyCallForAssistance(["leveler"], ["over2"]);
 
-    // ------------------------------
-    // 1b. Reuse combos (no rewrites)
-    // ------------------------------
     function applyCombo(projectTypes, sizes, combo) {
       projectTypes.forEach(p => sizes.forEach(s => {
         recommendations[`${p}|${s}`] = combo;
       }));
     }
 
-    // Shared concrete-style combo
     const COMBO_CONCRETE_1101_5000_QMAX = {
-      good: {
-        label: "Good",
-        name: "QUIKRETE® High Strength Concrete Mix",
-        code: "1101",
-        notes: "4000 PSI concrete mix suitable for interior and exterior applications that is a pre-blended mixture of sand, cement and gravel."
-      },
-      better: {
-        label: "Better",
-        name: "QUIKRETE® 5000",
-        code: "#1007",
-        notes: "5000 PSI high early strength gain concrete mix that is a pre-blended mixture of sand, cement and gravel."
-      },
-      best: {
-        label: "Best",
-        name: "QUIKRETE® Q Max Pro",
-        code: "#1004",
-        notes: "6500 PSI concrete that is air entrained and also contains a corrosion inhibitor and is a pre-blended mixture of sand, cement and gravel."
-      }
+      good: { label: "Good", name: "QUIKRETE® High Strength Concrete Mix", code: "1101",
+        notes: "4000 PSI concrete mix suitable for interior and exterior applications that is a pre-blended mixture of sand, cement and gravel." },
+      better: { label: "Better", name: "QUIKRETE® 5000", code: "#1007",
+        notes: "5000 PSI high early strength gain concrete mix that is a pre-blended mixture of sand, cement and gravel." },
+      best: { label: "Best", name: "QUIKRETE® Q Max Pro", code: "#1004",
+        notes: "6500 PSI concrete that is air entrained and also contains a corrosion inhibitor and is a pre-blended mixture of sand, cement and gravel." }
     };
 
-    // Apply shared combo to concrete + brick (NOT CMU here)
     applyCombo(["concrete"], ["2", "over2"], COMBO_CONCRETE_1101_5000_QMAX);
 
-    // CMU install combo (NO GOOD)
     const COMBO_CMU_MORTAR_1102_MASON_1136 = {
-      better: {
-        label: "Better",
-        name: "QUIKRETE® Mortar Mix",
-        code: "#1102",
-        notes: "Cement and sand mix only to be used above grade and in non-structural applications"
-      },
-      best: {
-        label: "Best",
-        name: "QUIKRETE® Mason Mix Type S",
-        code: "#1136",
-        notes: "Higher strength mix with the addition of lime for structural or load-bearing masonry joints and can also be used below grade."
-      }
+      better: { label: "Better", name: "QUIKRETE® Mortar Mix", code: "#1102",
+        notes: "Cement and sand mix only to be used above grade and in non-structural applications" },
+      best: { label: "Best", name: "QUIKRETE® Mason Mix Type S", code: "#1136",
+        notes: "Higher strength mix with the addition of lime for structural or load-bearing masonry joints and can also be used below grade." }
     };
 
-    // Apply CMU combo to the sizes you listed + brick
     applyCombo(["CMU", "brick"], ["0.25", "0.375", "0.5", "1"], COMBO_CMU_MORTAR_1102_MASON_1136);
 
-    // ------------------------------
-    // 2. DOM references
-    // ------------------------------
     const projectSelect = document.getElementById("projectType");
     const sizeSelect = document.getElementById("repairSize");
     const cardsContainer = document.getElementById("cardsContainer");
     const emptyState = document.getElementById("emptyState");
     const currentSelection = document.getElementById("currentSelection");
 
-    // ------------------------------
-    // 3. Helpers
-    // ------------------------------
     function updateSelectionLabel() {
       const projectText = projectSelect.options[projectSelect.selectedIndex]?.text || "";
       const sizeText = sizeSelect.options[sizeSelect.selectedIndex]?.text || "";
@@ -629,7 +587,6 @@
       const key = `${projectSelect.value}|${sizeSelect.value}`;
       const combo = recommendations[key];
 
-      // Reset callout styling every render (prevents it from "sticking")
       emptyState.classList.remove("callout");
 
       if (!projectSelect.value || !sizeSelect.value) {
@@ -650,11 +607,10 @@
         return;
       }
 
-      // Tech Services / callout message
       if (!combo.good && !combo.better && !combo.best && combo.message) {
         cardsContainer.innerHTML = "";
         emptyState.style.display = "block";
-        emptyState.classList.add("callout"); // ✅ green + highlighted like BEST
+        emptyState.classList.add("callout");
         emptyState.innerHTML = combo.message;
         updateSelectionLabel();
         return;
