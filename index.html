@@ -124,6 +124,19 @@
       flex-wrap: wrap;
     }
 
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .logo {
+      height: 48px;
+      width: auto;
+      display: block;
+    }
+    
     .results-title {
       font-size: 1.05rem;
       font-weight: 600;
@@ -258,11 +271,16 @@
 
 <body>
   <main class="app">
-    <h1>QUIKRETE Project Selector</h1>
-    <p class="subtitle">
-      Choose a project type and repair size to see a simple
-      <strong>Good / Better / Best</strong> recommendation.
-    </p>
+    <div class="header">
+      <img src="QK.png" alt="QUIKRETE logo" class="logo" />
+      <div>
+        <h1>QUIKRETE Project Selector</h1>
+        <p class="subtitle">
+          Choose a project type and repair size to see a simple 
+          <strong>GOOD / BETTER / BEST</strong> recommendation.
+        </p>
+      </div>
+      </div>
 
     <section aria-label="Project selection">
       <div class="form-row">
