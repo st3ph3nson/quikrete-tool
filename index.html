@@ -6,15 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    /* ✅ global box sizing */
+    /* Global box sizing */
     *, *::before, *::after { box-sizing: border-box; }
 
     :root {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 
-      /* Quikrete theme tokens */
+      /* Brand-ish tokens (kept simple) */
       --q-yellow: #facc15;
-      --q-yellow-2: #eab308;
+      --q-yellow-dark: #eab308;
       --q-black: #0b0b0b;
 
       /* Fullscreen yellow/black background */
@@ -26,7 +26,6 @@
       color: #f9fafb;
     }
 
-    /* ✅ Make desktop + all browsers respect the dark theme */
     html, body {
       background: transparent; /* let :root show through */
       color: #f9fafb;
@@ -34,9 +33,9 @@
 
     body {
       margin: 0;
-      padding: 0;              /* FULL SCREEN */
+      padding: 0;
       min-height: 100vh;
-      display: block;          /* remove centered boxing */
+      display: block;
     }
 
     .app {
@@ -47,8 +46,6 @@
       border: 0;
       box-shadow: none;
       padding: 2.25rem 1.25rem 3rem;
-
-      /* dark panel */
       background: linear-gradient(180deg, rgba(17,24,39,0.96), rgba(15,23,42,0.96));
     }
 
@@ -106,7 +103,7 @@
 
     select:focus {
       outline: none;
-      border-color: var(--q-yellow-2);
+      border-color: var(--q-yellow-dark);
       box-shadow: 0 0 0 2px rgba(250,204,21,0.25);
       background: rgba(0,0,0,0.25);
     }
@@ -170,9 +167,7 @@
       flex-direction: column;
       gap: 0.4rem;
       position: relative;
-
       overflow: hidden;
-
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
     }
@@ -364,9 +359,49 @@
   </main>
 
   <script>
-    // ------------------------------
-    // 1. Data (base, specific combos)
-    // ------------------------------
+    /*
+      Quikrete selector prototype.
+
+      Notes:
+      - Data is currently embedded in this file for easy iteration.
+      - TODO: move recommendations into a JSON file so non-devs can update products/links.
+      - TODO: centralize product definitions further (some items are still duplicated below).
+    */
+
+    // Small helper so we can reuse templates without accidentally sharing references.
+    function clone(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+
+    // Common products used in multiple size combos
+    const PRODUCTS = {
+      crackSeal_8640: {
+        label: "Good",
+        name: "QUIKRETE® Concrete Crack Seal",
+        code: "#8640",
+        notes: "Flowable crack sealer for hairline to small cracks in concrete slabs.",
+        datasheet: "https://www.quikrete.com/pdfs/data_sheet-concrete%20crack%20seal%208640-10%20-15.pdf",
+        sds: "https://www.quikrete.com/pdfs/sds-a11-acrylic-crack-seals.pdf"
+      },
+      advPolyCrackSeal_8660: {
+        label: "Better",
+        name: "QUIKRETE® Advanced Polymer Concrete Crack Sealant",
+        code: "#8660",
+        notes: "Flexible, long-lasting sealant for active or moving cracks up to 1/2\".",
+        datasheet: "https://www.quikrete.com/pdfs/data_sheet-advanced%20polymer%20concrete%20crack%20sealant%20862017.pdf",
+        sds: "https://www.quikrete.com/pdfs/sds-j7-advanced-polymer-concrete-crack-&-mortar-joint.pdf"
+      },
+      epoxyRepair: {
+        label: "Best",
+        name: "QUIKRETE® Epoxy Concrete Repair",
+        code: "Epoxy",
+        notes: "Two-component epoxy for maximum bond and chemical resistance in narrow cracks.",
+        datasheet: "https://www.quikrete.com/pdfs/data-sheet-epoxy-concrete-%20repair-8640-29.pdf",
+        sds: "https://www.quikrete.com/pdfs/sds-f5-epoxy-concrete-repair-parts-a-b.pdf"
+      }
+    };
+
+    // Recommendations lookup by "project|size"
     const recommendations = {
       // Mortar joint repair
       "mortar-joint|0.25": {
@@ -387,6 +422,7 @@
         }
       },
 
+      // Same as 0.25 (kept explicit for readability—easy to tweak later)
       "mortar-joint|0.375": {
         good: { label: "Good", name: "QUIKRETE® Mason Mix Type S", code: "#1136",
           notes: "Higher strength mix for structural or load-bearing masonry joints.",
@@ -427,59 +463,21 @@
       "mortar-joint|2": { message: "<strong>Mortar joint repair • Up to 2\"</strong><br/>For further assistance please call 1-800-282-5828." },
       "mortar-joint|over2": { message: "<strong>Mortar joint repair • Over 2\"</strong><br/>For further assistance please call 1-800-282-5828." },
 
-      // Crack repair
+      // Crack repair (refactored to reuse shared product defs)
       "crack|0.25": {
-        good: { label: "Good", name: "QUIKRETE® Concrete Crack Seal", code: "#8640",
-          notes: "Flowable crack sealer for hairline to small cracks in concrete slabs.",
-          datasheet: "https://www.quikrete.com/pdfs/data_sheet-concrete%20crack%20seal%208640-10%20-15.pdf",
-          sds: "https://www.quikrete.com/pdfs/sds-a11-acrylic-crack-seals.pdf"
-        },
-        better: { label: "Better", name: "QUIKRETE® Advanced Polymer Concrete Crack Sealant", code: "#8660",
-          notes: "Flexible, long-lasting sealant for active or moving cracks up to 1/2\".",
-          datasheet: "https://www.quikrete.com/pdfs/data_sheet-advanced%20polymer%20concrete%20crack%20sealant%20862017.pdf",
-          sds: "https://www.quikrete.com/pdfs/sds-j7-advanced-polymer-concrete-crack-&-mortar-joint.pdf"
-        },
-        best: { label: "Best", name: "QUIKRETE® Epoxy Concrete Repair", code: "Epoxy",
-          notes: "Two-component epoxy for maximum bond and chemical resistance in narrow cracks.",
-          datasheet: "https://www.quikrete.com/pdfs/data-sheet-epoxy-concrete-%20repair-8640-29.pdf",
-          sds: "https://www.quikrete.com/pdfs/sds-f5-epoxy-concrete-repair-parts-a-b.pdf"
-        }
+        good: clone(PRODUCTS.crackSeal_8640),
+        better: clone(PRODUCTS.advPolyCrackSeal_8660),
+        best: clone(PRODUCTS.epoxyRepair)
       },
-
       "crack|0.375": {
-        good: { label: "Good", name: "QUIKRETE® Concrete Crack Seal", code: "#8640",
-          notes: "Flowable crack sealer for hairline to small cracks in concrete slabs.",
-          datasheet: "https://www.quikrete.com/pdfs/data_sheet-concrete%20crack%20seal%208640-10%20-15.pdf",
-          sds: "https://www.quikrete.com/pdfs/sds-a11-acrylic-crack-seals.pdf"
-        },
-        better: { label: "Better", name: "QUIKRETE® Advanced Polymer Concrete Crack Sealant", code: "#8660",
-          notes: "Flexible, long-lasting sealant for active or moving cracks up to 1/2\".",
-          datasheet: "https://www.quikrete.com/pdfs/data_sheet-advanced%20polymer%20concrete%20crack%20sealant%20862017.pdf",
-          sds: "https://www.quikrete.com/pdfs/sds-j7-advanced-polymer-concrete-crack-&-mortar-joint.pdf"
-        },
-        best: { label: "Best", name: "QUIKRETE® Epoxy Concrete Repair", code: "Epoxy",
-          notes: "Two-component epoxy for maximum bond and chemical resistance in narrow cracks.",
-          datasheet: "https://www.quikrete.com/pdfs/data-sheet-epoxy-concrete-%20repair-8640-29.pdf",
-          sds: "https://www.quikrete.com/pdfs/sds-f5-epoxy-concrete-repair-parts-a-b.pdf"
-        }
+        good: clone(PRODUCTS.crackSeal_8640),
+        better: clone(PRODUCTS.advPolyCrackSeal_8660),
+        best: clone(PRODUCTS.epoxyRepair)
       },
-
       "crack|0.5": {
-        good: { label: "Good", name: "QUIKRETE® Concrete Crack Seal", code: "#8640",
-          notes: "Flowable crack sealer for hairline to small cracks in concrete slabs.",
-          datasheet: "https://www.quikrete.com/pdfs/data_sheet-concrete%20crack%20seal%208640-10%20-15.pdf",
-          sds: "https://www.quikrete.com/pdfs/sds-a11-acrylic-crack-seals.pdf"
-        },
-        better: { label: "Better", name: "QUIKRETE® Advanced Polymer Concrete Crack Sealant", code: "#8660",
-          notes: "Flexible, long-lasting sealant for active or moving cracks up to 1/2\".",
-          datasheet: "https://www.quikrete.com/pdfs/data_sheet-advanced%20polymer%20concrete%20crack%20sealant%20862017.pdf",
-          sds: "https://www.quikrete.com/pdfs/sds-j7-advanced-polymer-concrete-crack-&-mortar-joint.pdf"
-        },
-        best: { label: "Best", name: "QUIKRETE® Epoxy Concrete Repair", code: "Epoxy",
-          notes: "Two-component epoxy for maximum bond and chemical resistance in narrow cracks.",
-          datasheet: "https://www.quikrete.com/pdfs/data-sheet-epoxy-concrete-%20repair-8640-29.pdf",
-          sds: "https://www.quikrete.com/pdfs/sds-f5-epoxy-concrete-repair-parts-a-b.pdf"
-        }
+        good: clone(PRODUCTS.crackSeal_8640),
+        better: clone(PRODUCTS.advPolyCrackSeal_8660),
+        best: clone(PRODUCTS.epoxyRepair)
       },
 
       "crack|1": {
@@ -518,38 +516,39 @@
         }
       },
 
-      // Surface repair (unchanged except kept your links where present)
+      // Surface repair (kept mostly as-is to avoid changing behavior)
       "surface|0.25": {
         good: { label: "Good", name: "QUIKRETE® Vinyl Concrete Patcher", code: "#1133",
           notes: "General-purpose patch for spalls and shallow repairs up to 1/4\" deep.",
-              datasheet: "https://www.quikrete.com/pdfs/data_sheet-vinyl%20concrete%20patcher%201133.pdf",
-              sds: "https://www.quikrete.com/pdfs/sds-c13-polymer-modified-repair-products.pdf"
-              },
+          datasheet: "https://www.quikrete.com/pdfs/data_sheet-vinyl%20concrete%20patcher%201133.pdf",
+          sds: "https://www.quikrete.com/pdfs/sds-c13-polymer-modified-repair-products.pdf"
+        },
         better: { label: "Better", name: "QUIKRETE® Quick Setting Cement", code: "#1240",
           notes: "Quick setting patch for spalls and shallow repairs from feather edge to 2\" deep.",
-                datasheet: "https://www.quikrete.com/pdfs/data_sheet-quick-setting%20cement%201240.pdf",
-                sds: "https://www.quikrete.com/pdfs/sds-c20%20fast-setting-products.pdf"
-                },
+          datasheet: "https://www.quikrete.com/pdfs/data_sheet-quick-setting%20cement%201240.pdf",
+          sds: "https://www.quikrete.com/pdfs/sds-c20%20fast-setting-products.pdf"
+        },
         best: { label: "Best", name: "QUIKRETE® Polymer Modified Structural Repair", code: "#1241",
           notes: "Quick setting polymer modified patch for spalls and shallow repairs from feather edge to 2\" deep.",
-              datasheet: "https://www.quikrete.com/pdfs/polymer-modified-structural-repair-1241-25.pdf",
-              sds: "https://www.quikrete.com/pdfs/sds-c17-pm-structural-repair.pdf"
-              }
+          datasheet: "https://www.quikrete.com/pdfs/polymer-modified-structural-repair-1241-25.pdf",
+          sds: "https://www.quikrete.com/pdfs/sds-c17-pm-structural-repair.pdf"
+        }
       },
 
       "surface|0.375": {
         good: { label: "Good", name: "QUIKRETE® Fast Set Repair Mortar", code: "#1241",
-          notes: "General-purpose fast setting patch for spalls and shallow repairs up to 2\" deep." },
+          notes: "General-purpose fast setting patch for spalls and shallow repairs up to 2\" deep."
+        },
         better: { label: "Better", name: "QUIKRETE® Quick Setting Cement", code: "#1240",
           notes: "Quick setting patch for spalls and shallow repairs from feather edge to 2\" deep.",
-                datasheet: "https://www.quikrete.com/pdfs/data_sheet-quick-setting%20cement%201240.pdf",
-                sds: "https://www.quikrete.com/pdfs/sds-c20%20fast-setting-products.pdf"
-                },
+          datasheet: "https://www.quikrete.com/pdfs/data_sheet-quick-setting%20cement%201240.pdf",
+          sds: "https://www.quikrete.com/pdfs/sds-c20%20fast-setting-products.pdf"
+        },
         best: { label: "Best", name: "QUIKRETE® Polymer Modified Structural Repair", code: "#1241",
           notes: "Quick setting polymer modified patch for spalls and shallow repairs from feather edge to 2\" deep.",
-              datasheet: "https://www.quikrete.com/pdfs/polymer-modified-structural-repair-1241-25.pdf",
-              sds: "https://www.quikrete.com/pdfs/sds-c17-pm-structural-repair.pdf"
-              }
+          datasheet: "https://www.quikrete.com/pdfs/polymer-modified-structural-repair-1241-25.pdf",
+          sds: "https://www.quikrete.com/pdfs/sds-c17-pm-structural-repair.pdf"
+        }
       },
 
       "surface|0.5": {
@@ -560,14 +559,14 @@
         },
         better: { label: "Better", name: "QUIKRETE® Quick Setting Cement", code: "#1240",
           notes: "Quick setting patch for spalls and shallow repairs from feather edge to 2\" deep.",
-                  datasheet: "https://www.quikrete.com/pdfs/data_sheet-quick-setting%20cement%201240.pdf",
-                sds: "https://www.quikrete.com/pdfs/sds-c20%20fast-setting-products.pdf"
-                },
+          datasheet: "https://www.quikrete.com/pdfs/data_sheet-quick-setting%20cement%201240.pdf",
+          sds: "https://www.quikrete.com/pdfs/sds-c20%20fast-setting-products.pdf"
+        },
         best: { label: "Best", name: "QUIKRETE® Polymer Modified Structural Repair", code: "#1241",
           notes: "Quick setting polymer modified patch for spalls and shallow repairs from feather edge to 2\" deep.",
-              datasheet: "https://www.quikrete.com/pdfs/polymer-modified-structural-repair-1241-25.pdf",
-              sds: "https://www.quikrete.com/pdfs/sds-c17-pm-structural-repair.pdf"
-              }
+          datasheet: "https://www.quikrete.com/pdfs/polymer-modified-structural-repair-1241-25.pdf",
+          sds: "https://www.quikrete.com/pdfs/sds-c17-pm-structural-repair.pdf"
+        }
       },
 
       "surface|1": {
@@ -578,18 +577,18 @@
         },
         better: { label: "Better", name: "QUIKRETE® Quick Setting Cement", code: "#1240",
           notes: "Quick setting patch for spalls and shallow repairs from feather edge to 2\" deep.",
-                  datasheet: "https://www.quikrete.com/pdfs/data_sheet-quick-setting%20cement%201240.pdf",
-                sds: "https://www.quikrete.com/pdfs/sds-c20%20fast-setting-products.pdf"
-                },
+          datasheet: "https://www.quikrete.com/pdfs/data_sheet-quick-setting%20cement%201240.pdf",
+          sds: "https://www.quikrete.com/pdfs/sds-c20%20fast-setting-products.pdf"
+        },
         best: { label: "Best", name: "QUIKRETE® Polymer Modified Structural Repair", code: "#1241",
           notes: "Quick setting polymer modified patch for spalls and shallow repairs from feather edge to 2\" deep.",
-              datasheet: "https://www.quikrete.com/pdfs/polymer-modified-structural-repair-1241-25.pdf",
-              sds: "https://www.quikrete.com/pdfs/sds-c17-pm-structural-repair.pdf"
-              }
+          datasheet: "https://www.quikrete.com/pdfs/polymer-modified-structural-repair-1241-25.pdf",
+          sds: "https://www.quikrete.com/pdfs/sds-c17-pm-structural-repair.pdf"
+        }
       },
 
       "surface|2": {
-        good: { label: "Good", name: "QUIKRETE® Sand/Topping Mix", code: "#1103",
+        good: { label: "Good", name: "QUIKRETE® Sand Topping Mix", code: "#1103",
           notes: "Use for concrete repair of steps, slabs and any concrete horizontal surface between 3/8\" to 2\" thick.",
           datasheet: "https://www.quikrete.com/pdfs/data_sheet-sand-topping%20mix%201103.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c9-general-repair-products.pdf"
@@ -608,7 +607,7 @@
 
       "surface|over2": {
         good: { label: "Good", name: "QUIKRETE® Polymer Modified Structural Repair", code: "#1241",
-          notes: "Quick setting polymer modified patch for spalls and shallow repairs from feather edge to 2\" deep. Repairs can be done over 2\" deep in lifts of 2\" at a time with 4 hours in between lifts.",
+          notes: "Repairs over 2\" deep should be done in 2\" lifts with ~4 hours between lifts.",
           datasheet: "https://www.quikrete.com/pdfs/polymer-modified-structural-repair-1241-25.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c17-pm-structural-repair.pdf"
         },
@@ -627,53 +626,53 @@
       // Leveling
       "leveler|0.25": {
         good: { label: "Good", name: "QUIKRETE® Self Leveling Floor Resurfacer", code: "#1249-50",
-          notes: "Self Leveling Floor Resurfacer that can go between feather edge and 5/8\" thick. Cannot be used as a finished flooring surface.",
+          notes: "Feather edge to 5/8\" thick. Not a finished flooring surface.",
           datasheet: "https://www.quikrete.com/pdfs/data_sheet-self-leveling%20floor%20resurfacer%201249-50%20-51.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c8-self-leveling-underlayments.pdf"
         },
         better: { label: "Better", name: "QUIKRETE® Fast Setting Self Leveling Floor Resurfacer", code: "#1249-51",
-          notes: "Fast Setting Self Leveling Floor Resurfacer that can go between feather edge and 1.5\" thick. Can be used as a finished flooring surface.",
+          notes: "Feather edge to 1.5\" thick. Can be used as a finished flooring surface.",
           datasheet: "https://www.quikrete.com/pdfs/data_sheet-self-leveling%20floor%20resurfacer%201249-50%20-51.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c8-self-leveling-underlayments.pdf"
         },
         best: { label: "Best", name: "QUIKRETE® Re-Cap", code: "#1131",
-          notes: "Re-Cap Concrete Resurfacer is designed to provide a new, durable, and wear-resistant surface over worn or scaled concrete.",
+          notes: "Resurfacer designed to provide a new, durable wear surface over worn/scaled concrete.",
           datasheet: "https://www.quikrete.com/pdfs/datasheet-concrete-resurfacer_1131-47.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c6-fast-setting-products.pdf"
         }
       },
 
-      "leveler|0.375": { /* unchanged structure, kept your links */
+      "leveler|0.375": {
         good: { label: "Good", name: "QUIKRETE® Self Leveling Floor Resurfacer", code: "#1249-50",
-          notes: "Self Leveling Floor Resurfacer that can go between feather edge and 5/8\" thick. Cannot be used as a finished flooring surface.",
+          notes: "Feather edge to 5/8\" thick. Not a finished flooring surface.",
           datasheet: "https://www.quikrete.com/pdfs/data_sheet-self-leveling%20floor%20resurfacer%201249-50%20-51.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c8-self-leveling-underlayments.pdf"
         },
         better: { label: "Better", name: "QUIKRETE® Fast Setting Self Leveling Floor Resurfacer", code: "#1249-51",
-          notes: "Fast Setting Self Leveling Floor Resurfacer that can go between feather edge and 1.5\" thick. Can be used as a finished flooring surface.",
+          notes: "Feather edge to 1.5\" thick. Can be used as a finished flooring surface.",
           datasheet: "https://www.quikrete.com/pdfs/data_sheet-self-leveling%20floor%20resurfacer%201249-50%20-51.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c8-self-leveling-underlayments.pdf"
         },
         best: { label: "Best", name: "QUIKRETE® Re-Cap", code: "#1131",
-          notes: "Re-Cap Concrete Resurfacer is designed to provide a new, durable, and wear-resistant surface over worn or scaled concrete.",
+          notes: "Resurfacer designed to provide a new, durable wear surface over worn/scaled concrete.",
           datasheet: "https://www.quikrete.com/pdfs/datasheet-concrete-resurfacer_1131-47.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c6-fast-setting-products.pdf"
         }
       },
 
-      "leveler|0.5": { /* unchanged structure, kept your links */
+      "leveler|0.5": {
         good: { label: "Good", name: "QUIKRETE® Self Leveling Floor Resurfacer", code: "#1249-50",
-          notes: "Self Leveling Floor Resurfacer that can go between feather edge and 5/8\" thick. Cannot be used as a finished flooring surface.",
+          notes: "Feather edge to 5/8\" thick. Not a finished flooring surface.",
           datasheet: "https://www.quikrete.com/pdfs/data_sheet-self-leveling%20floor%20resurfacer%201249-50%20-51.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c8-self-leveling-underlayments.pdf"
         },
         better: { label: "Better", name: "QUIKRETE® Fast Setting Self Leveling Floor Resurfacer", code: "#1249-51",
-          notes: "Fast Setting Self Leveling Floor Resurfacer that can go between feather edge and 1.5\" thick. Can be used as a finished flooring surface.",
+          notes: "Feather edge to 1.5\" thick. Can be used as a finished flooring surface.",
           datasheet: "https://www.quikrete.com/pdfs/data_sheet-self-leveling%20floor%20resurfacer%201249-50%20-51.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c8-self-leveling-underlayments.pdf"
         },
         best: { label: "Best", name: "QUIKRETE® Re-Cap", code: "#1131",
-          notes: "Re-Cap Concrete Resurfacer is designed to provide a new, durable, and wear-resistant surface over worn or scaled concrete.",
+          notes: "Resurfacer designed to provide a new, durable wear surface over worn/scaled concrete.",
           datasheet: "https://www.quikrete.com/pdfs/datasheet-concrete-resurfacer_1131-47.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c6-fast-setting-products.pdf"
         }
@@ -681,17 +680,17 @@
 
       "leveler|1": {
         good: { label: "Good", name: "QUIKRETE® Sand Topping Mix", code: "#1103",
-          notes: "Sand Topping Mix is designed to be used as a for repairing and topping concrete surfaces up to 2\" thick.",
+          notes: "Used for topping/repairing horizontal surfaces up to 2\" thick.",
           datasheet: "https://www.quikrete.com/pdfs/data_sheet-sand-topping%20mix%201103.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c9-general-repair-products.pdf"
         },
         better: { label: "Better", name: "QUIKRETE® Re-Cap", code: "#1131-47",
-          notes: "Re-Cap Concrete Resurfacer is designed to provide a new, durable, and wear-resistant surface over worn or scaled concrete. When applying at 1 inch thick you must do two half inch applications",
+          notes: "For ~1\" total thickness, apply as two ~1/2\" lifts.",
           datasheet: "https://www.quikrete.com/pdfs/datasheet-concrete-resurfacer_1131-47.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c6-fast-setting-products.pdf"
         },
         best: { label: "Best", name: "QUIKRETE® Fast Setting Self Leveling Floor Resurfacer", code: "#1249-51",
-          notes: "Fast Setting Self Leveling Floor Resurfacer that can go between feather edge and 1.5\" thick. Can be used as a finished flooring surface.",
+          notes: "Feather edge to 1.5\" thick. Can be used as a finished flooring surface.",
           datasheet: "https://www.quikrete.com/pdfs/data_sheet-self-leveling%20floor%20resurfacer%201249-50%20-51.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c8-self-leveling-underlayments.pdf"
         }
@@ -699,17 +698,17 @@
 
       "leveler|2": {
         good: { label: "Good", name: "QUIKRETE® Sand Topping Mix", code: "#1103",
-          notes: "Sand Topping Mix is designed to be used as a for repairing and topping concrete surfaces up to 2\" thick.",
+          notes: "Used for topping/repairing horizontal surfaces up to 2\" thick.",
           datasheet: "https://www.quikrete.com/pdfs/data_sheet-sand-topping%20mix%201103.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c9-general-repair-products.pdf"
         },
         better: { label: "Better", name: "QUIKRETE® Sand Topping Mix", code: "#1103",
-          notes: "Sand Topping Mix is designed to be used as a for repairing and topping concrete surfaces up to 2\" thick.",
+          notes: "Used for topping/repairing horizontal surfaces up to 2\" thick.",
           datasheet: "https://www.quikrete.com/pdfs/data_sheet-sand-topping%20mix%201103.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c9-general-repair-products.pdf"
         },
         best: { label: "Best", name: "QUIKRETE® Fast Setting Self Leveling Floor Resurfacer", code: "#1249-51",
-          notes: "Fast Setting Self Leveling Floor Resurfacer that can go between feather edge and 1.5\" thick. Can be used as a finished flooring surface.",
+          notes: "Feather edge to 1.5\" thick. Can be used as a finished flooring surface.",
           datasheet: "https://www.quikrete.com/pdfs/data_sheet-self-leveling%20floor%20resurfacer%201249-50%20-51.pdf",
           sds: "https://www.quikrete.com/pdfs/sds-c8-self-leveling-underlayments.pdf"
         }
